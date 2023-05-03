@@ -1,31 +1,47 @@
 const fs = require("fs/promises");
+const nanoid = require("nanoid");
 const path = require("path");
 const contactsPath = path.join(__dirname, "./db/contacts.json");
 
-function listContacts() {
-  const contacts = fs.readFile(contactsPath);
-  return JSON.parse(contacts);
+async function listContacts() {
+  try {
+    const contacts = await fs.readFile(contactsPath, "utf8");
+    console.table(JSON.parse(contacts));
+  } catch (error) {
+    (error) => console.log(error);
+  }
+  return;
 }
 
-function getContactById(contactId) {
-  const contacts = fs.readFile(contactsPath);
-  return contacts.find((el) => el.id === contactId);
+async function getContactById(contactId) {
+  try {
+    const contacts = await fs.readFile(contactsPath, "utf8");
+    const result = JSON.parse(contacts).find((el) => el.id === contactId);
+    console.table(result);
+  } catch (error) {
+    (error) => console.log(error);
+  }
+  return;
 }
 
-function removeContact(contactId) {
-  const contacts = fs.readFile(contactsPath);
-  const index = contacts.findIndex((el) => el.id === contactId);
+async function removeContact(contactId) {
+  const contacts = await fs.readFile(contactsPath, "utf8");
+  const parsedContacts = JSON.parse(contacts);
+  const index = parsedContacts.findIndex((el) => el.id === contactId);
   if (index === -1) {
     return;
   }
-  contacts.splice(index, 1);
-  fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+  parsedContacts.splice(index, 1);
+  await fs.writeFile(contactsPath, JSON.stringify(parsedContacts, null, 2));
+  console.log("Contact is deleted");
 }
 
-function addContact(name, email, phone) {
-  const contacts = fs.readFile(contactsPath);
-  contacts.push({ name, email, phone });
-  fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+async function addContact(name, email, phone) {
+  const contacts = await fs.readFile(contactsPath, "utf8");
+  const parsedContacts = JSON.parse(contacts);
+  parsedContacts.push({ id: nanoid(), name, email, phone });
+  await fs.writeFile(contactsPath, JSON.stringify(parsedContacts, null, 2));
+  console.log("Contact created");
 }
 
 module.exports = {
